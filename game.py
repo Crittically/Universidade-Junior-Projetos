@@ -30,6 +30,19 @@ modifiers = [(350, 720, 300, 5, 0.8), (550, 1400, 230, 4, 0.5), (550, 1400, 200,
 konami = [pygame.K_UP, pygame.K_UP, pygame.K_DOWN, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_b, pygame.K_a]
 konami_index = 0
 bonus_speed_mult = 1
+flappy = pygame.image.load("flappy.png").convert_alpha()
+flappy_half_width = flappy.get_width() // 2
+flappy_half_height = flappy.get_height() // 2
+background_surface = pygame.image.load("background.png").convert()
+background = pygame.transform.smoothscale_by(background_surface, height / background_surface.get_height())
+pipe_surface = pygame.image.load("pipe.png").convert_alpha()
+pipe = pygame.transform.smoothscale_by(pipe_surface, 62 / pipe_surface.get_width())
+pipe_height = pipe.get_height()
+pipe_width = pipe.get_width()
+pipe_down = pygame.transform.rotate(pipe, 180)
+pipe_left = pygame.transform.rotate(pipe, 90)
+pipe_right = pygame.transform.rotate(pipe, 270)
+
 
 while running:   
     # poll for events
@@ -107,18 +120,20 @@ while running:
             horizontal_hole_pos.x -= width * dt / walltime
             vertical_hole_pos.y += height * dt / walltime
 
+        #draw background
+        screen.blit(background, (0, 0))
         #simpole method to simulate blinking by checking wall position
         if horizontal_hole_pos.x > width and (horizontal_hole_pos.x - width) // (width / walltime / 10) % 2 == 0: #safe_seconds * width / walltime :
             #draw safe zone
             screen.blit(safe_surface, (vertical_hole_pos.x, horizontal_hole_pos.y - hole_width))
         #draw horizontal walls
-        pygame.draw.polygon(screen, "black", [(horizontal_hole_pos.x, height), (horizontal_hole_pos.x, horizontal_hole_pos.y), (horizontal_hole_pos.x + 60, horizontal_hole_pos.y), (horizontal_hole_pos.x + 60, height)])
-        pygame.draw.polygon(screen, "black", [(horizontal_hole_pos.x, 0), (horizontal_hole_pos.x, horizontal_hole_pos.y - hole_width), (horizontal_hole_pos.x + 60, horizontal_hole_pos.y - hole_width), (horizontal_hole_pos.x + 60, 0)])
+        screen.blit(pipe, (horizontal_hole_pos.x, horizontal_hole_pos.y))
+        screen.blit(pipe_down, (horizontal_hole_pos.x, horizontal_hole_pos.y - hole_width - pipe_height))
         #draw vetical walls
-        pygame.draw.polygon(screen, "black", [(0, vertical_hole_pos.y), (0, vertical_hole_pos.y - 60), (vertical_hole_pos.x, vertical_hole_pos.y - 60), (vertical_hole_pos.x, vertical_hole_pos.y)])
-        pygame.draw.polygon(screen, "black", [(vertical_hole_pos.x + hole_width, vertical_hole_pos.y), (vertical_hole_pos.x + hole_width, vertical_hole_pos.y - 60), (width, vertical_hole_pos.y - 60), (width, vertical_hole_pos.y)])
+        screen.blit(pipe_right, (vertical_hole_pos.x-pipe_height, vertical_hole_pos.y - 60))
+        screen.blit(pipe_left, (vertical_hole_pos.x + hole_width, vertical_hole_pos.y - 60))
         #draw player
-        pygame.draw.circle(screen, "red", player_pos, 40)
+        screen.blit(flappy, (player_pos.x - flappy_half_width, player_pos.y - flappy_half_height))
 
         #gameover when hitting the ground
         if player_pos.y >= floor:
